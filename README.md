@@ -104,7 +104,7 @@ The above data structure is perfectly adequate for static data, but what if we w
 
 The main insight is to realize that it is trivial to update a range tree if we don't care about maintaining balance.  To insert, just walk the tree and insert into all the appropriate subtrees.  Deletion requires a bit more work, but basically boils down to walking a subtree to find an appropriate ancestor and moving it to the right position.
 
-The problem with doing all these ad-hoc updates though is that the tree will over time become unbalanced, and so we lose the efficiency of our queries.  However, the idea behind BB-alpha trees is that this is ok providing we don't let it get too out of whack.  The basic concept is that we pick some constant 0 < alpha < 1/2 that determines how much sloppiness we will allow in our tree.  The goal is to enforce the invariant that subtrees are nearly balanced:
+The problem with doing all these ad-hoc updates though is that the tree will over time become unbalanced, and so we lose the efficiency of our queries.  However, the idea behind BB-alpha trees is that this is ok providing we don't let it get too out of whack.  The basic concept is that we pick some constant 1/4 < alpha < sqrt(2)/2 that determines how much sloppiness we will allow in our tree.  The goal is to enforce the invariant that subtrees are nearly balanced:
 
 * w(left(p)) <= (1 - alpha) * w(p)
 * w(right(p)) <= (1 - alpha) * w(p)
