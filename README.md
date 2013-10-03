@@ -1,12 +1,9 @@
 CS558: Range trees
 ==================
-Last time we talked about orthogonal range searching, and we saw a simple data structure for solving the problem using only O(n) space giving O(n^{(d-1/d)}+k) queries.  
+Last time we talked about orthogonal range searching, and we saw a simple data structure for solving the problem using only O(n) space giving O(n^{(d-1/d)}+k) queries.  This time we are going to talk about a different data structure (range trees) which gives vastly more efficient range queries O(log^d(n) + k) time.  But this comes at a cost, as range trees use O(n log^{d-1}(n)) space instead of merely O(n) as in the case of kdtrees.
 
-# Range trees
-Unlike kd-trees, range trees give gauranteed O(log^d(n) + k) query time for orthogonal range searches.  But this comes at a cost, as they use O(n log^{d-1}(n)) space.  The basis for range trees comes from a different generalization of 1D range searching.
-
-## Review: 1D range searching on trees
-Probably the most straightforward way to find all elements in a binary search tree that are contained within an interval is to recursively insert the end points of the interval into the tree.  If we ever come to a subtree which is completely contained in the interval, then we return that entire subtree and terminate.  This generates a partition of the interval into ranges, each of which contains 2^k elements.  In this case, to report all the elements in one of these subtrees we can just do an O(n) traversal of the tree:
+# Review: 1D range searching on trees
+The starting point for defining range trees comes from a  generalization of 1D range searching.  Probably the most straightforward way to find all elements in a binary search tree that are contained within an interval is to recursively insert the end points of the interval into the tree.  If we ever come to a subtree which is completely contained in the interval, then we return that entire subtree and terminate.  This generates a partition of the interval into ranges, each of which contains 2^k elements.  In this case, to report all the elements in one of these subtrees we can just do an O(n) traversal of the tree:
 
 ```javascript
 function allPoints(tree) {
@@ -19,7 +16,7 @@ function allPoints(tree) {
 
 The number of these ranges is at most log_2(n), and each pair of ranges in the returned result does not intersect.  In total, the tree stores O(n) distinct ranges, not including the internal nodes of the tree.
 
-## Range tree construction
+# Range tree construction
 The basic idea behind a range tree is to recursively apply this splitting to each of the ranges.  The idea is that we first construct a balanced binary tree ordered by the x-coordinate, then for every subtree within this tree, we recursively construct a second tree on all points in the subtree ordered by y.  In JavaScript, we could do this as follows:
 
 ```javascript
@@ -50,7 +47,7 @@ function makeTree(d, points) {
 At first it might seem like we are building a lot of extra subtrees, but it turns out that it isn't too bad.  The key thing to realize is that at each level of the tree, there are exactly n extra nodes in all the subtrees.  So the total amount of storage (in 2D anyway) is proportional to n * height of the tree, or O(n log(n)).  We can continue this process out to higher dimensions, and we get a storage cost of O(n log^{d-1}(n)) overall.  The one slightly tricky thing here is how we select the mid point for each subtree.  If we use a fast median selection algorithm, then the overall construction time will reduce to merely O(n log^{d-1}(n)), which is optimal.  However, because we are using a sort() here to save some keystrokes the total cost is actually O(n log^{d}(n)).
 
 
-## Range queries
+# Range queries
 
 To query a range tree, we first search along x to get a decomposition of the range into dyadic intervals.  Then for each of those subregions, we search again recursively until we have exhausted all of the points:
 
@@ -89,9 +86,9 @@ function queryBox(tree, lo, hi) {
 
 In the first situation, we get O(log(n)) ranges, each of subsequently partitions into at most O(log(n)) subranges and so on.  So the total cost of this algorithm is O(log^d(n) + k) in general.  Compare this to a kdtree, where range searching could take up to O(n^{1-1/d}+k), and it is clear that we get a pretty big benefit.  However, there are still a few tricks that we can do to speed this up.
 
-## Advanced topics
+# Advanced topics
 
-### Fractional cascading
+## Fractional cascading
 
 We can save an extra log factor on the query time in range trees without substantially increasing the space costs.  The key idea behind this is an algorithmic technique called *fractional cascading*.  The general version of fractional cascading is a way to speed up successive binary searches in sorted lists using the same key.  In the context of range trees, this is applied to the specific task of finding the upper and lower bounds on the y-coordinate.
 
@@ -101,7 +98,7 @@ There are two main parts of fractional cascading.  The first part, or "cascading
 #### Fractional propagation
 To avoid this, we can propagate some fraction (say half) of the second array into the first, and then use these elements to speed up the binary search.  That way when we search the first array we are gaunateed that the next pointer will be within +/-1 of the exact index.  Using this trick we can reduce the cost of all binary searches after the first to an O(1) array look up.
 
-### Dynamization
+## Dynamization
 
 The above data structure is perfectly adequate for static data, but what if we want to insert or remove points?  It seems like it could be a really hard problem.  Generalizations of data structures like red/black or AVL trees to range trees and kdtrees are known, but they are hideously complicated.  However, there is a simple trick that gives us optimal *amortized* performance at no extra cost.
 
@@ -158,7 +155,7 @@ function insert(tree, p) {
 
 A similar trick is possible for removing points.  It is also worth pointing out that this concept applies equally well to kdtrees.
 
-### Layered range trees
+## Layered range trees
 We can also replace the tree data structure here with an array, though life becomes more complicated.  For an example of how this can be done see the following module:
 
 [https://github.com/mikolalysenko/static-range-query](https://github.com/mikolalysenko/static-range-query)
