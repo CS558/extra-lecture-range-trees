@@ -104,12 +104,12 @@ The above data structure is perfectly adequate for static data, but what if we w
 
 The main insight is to realize that it is trivial to update a range tree if we don't care about maintaining balance.  To insert, just walk the tree and insert into all the appropriate subtrees.  Deletion requires a bit more work, but basically boils down to walking a subtree to find an appropriate ancestor and moving it to the right position.
 
-The problem with doing all these ad-hoc updates though is that the tree will over time become unbalanced, and so we lose the efficiency of our queries.  However, the idea behind BB-alpha trees is that this is ok providing we don't let it get too out of whack.  The basic concept is that we pick some constant 1/4 < alpha < sqrt(2)/2 that determines how much sloppiness we will allow in our tree.  The goal is to enforce the invariant that subtrees are nearly balanced:
+The problem with doing all these ad-hoc updates though is that the tree will over time become unbalanced, and so we lose the efficiency of our queries.  The way we solve this is by allowing the trees to become slightly unbalanced up to some threshold.  The way we measure this balance threshold is that we pick some parameter 1/4 < alpha < sqrt(2)/2 that determines how much sloppiness we will allow in our tree.  The goal is to enforce the invariant that subtrees are nearly balanced.  That is let, w be the weight of a tree p, then we require that:
 
 * w(left(p)) <= (1 - alpha) * w(p)
 * w(right(p)) <= (1 - alpha) * w(p)
 
-One can show that in this situation, the height of the tree is at most log_(1-1/alpha)(n), which for alpha>0 is still O(log(n)).  So what happens if a tree becomes unbalanced such that these invariants aren't satisified anymore?  In a BB-alpha tree we just rebuild it!  It turns out that amortized the cost of this rebuilding is completely paid for by the updates themself.  Here is some JavaScript which shows how to implement the BB-alpha rebalancing for insertion into a range tree:
+One can show that in this situation, the height of the tree is at most log_(1-1/alpha)(n), which for alpha>0 is still O(log(n)).  So what happens if a tree becomes unbalanced such that these invariants aren't satisified anymore?  In a weight balanced tree we just rebuild it!  It turns out that amortized the cost of this rebuilding is completely paid for by the updates if we charge them O(cost of rebuilding tree/number points).  Here is some JavaScript which shows how to implement the weight balancing for insertion into a range tree:
 
 ```javascript
 function insert(tree, p) {
@@ -153,7 +153,7 @@ function insert(tree, p) {
 }
 ```
 
-A similar trick is possible for removing points.  It is also worth pointing out that this concept applies equally well to kdtrees.
+A similar trick is possible for removing points.  It is also worth pointing out that this concept applies equally well to kdtrees or generally any data structure.
 
 ## Layered range trees
 We can also replace the tree data structure here with an array, though life becomes more complicated.  For an example of how this can be done see the following module:
